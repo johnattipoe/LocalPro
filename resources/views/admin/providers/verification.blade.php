@@ -1,0 +1,1 @@
+<section class="request-detail-card"><h2>Provider identity checks</h2><p>Review the provider profile and submitted identity documents before approval.</p><a class="button" href="{{ route('admin.providers.index',['status'=>'pending']) }}">Open pending verification queue</a></section>

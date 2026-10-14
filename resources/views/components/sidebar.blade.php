@@ -1,0 +1,1 @@
+<aside class="portal-sidebar"><a href="{{ route('customer.dashboard') }}">Dashboard</a><a href="{{ route('customer.requests.index') }}">My requests</a><a href="{{ route('messages.index') }}">Messages</a><a href="{{ route('notifications.index') }}">Notifications</a><a href="{{ route('customer.profile.edit') }}">Profile</a></aside>
