@@ -12,7 +12,8 @@ class TrustProxies extends Middleware
      *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    // Render terminates HTTPS at its edge proxy and forwards the original scheme.
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.

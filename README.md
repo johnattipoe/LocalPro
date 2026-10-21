@@ -40,7 +40,9 @@ The repository includes a multi-stage `Dockerfile` that installs PHP dependencie
    | `APP_ENV` | `production` |
    | `APP_DEBUG` | `false` |
    | `APP_KEY` | A new key from `php artisan key:generate --show` (do not reuse the local key) |
-   | `APP_URL` | The HTTPS URL Render assigns to the service |
+   | `APP_URL` | The HTTPS URL Render assigns to the service (for example, `https://your-service.onrender.com`) |
+   | `ASSET_URL` | Leave unset, or use the same HTTPS origin as `APP_URL` |
+   | `SESSION_SECURE_COOKIE` | `true` |
    | `DB_CONNECTION` | `pgsql` |
    | `DATABASE_URL` | Your database's PostgreSQL connection URL; use the Render internal URL for a same-region Render database, or your Supabase connection URL |
    | `DB_SSLMODE` | `require` when your database requires TLS |
@@ -53,7 +55,7 @@ The repository includes a multi-stage `Dockerfile` that installs PHP dependencie
 4. Deploy. On startup, the container runs `php artisan migrate --force`; check Render's deploy logs for migration or connection errors.
 5. After deployment, create the first administrator through the Render service shell with `php artisan localpro:make-admin`. Test registration, login, password reset with a configured production mailer, provider document upload/download, and the admin verification flow.
 
-The app uses file cache, file sessions, and a synchronous queue by default, so Memcached and Redis are not required for a single Render instance. R2 must be configured before accepting provider verification documents; Render's normal container filesystem is ephemeral. Configure SMTP credentials in Render as well if password-reset emails need to reach users.
+The app uses file cache, file sessions, and a synchronous queue by default, so Memcached and Redis are not required for a single Render instance. Set `FILESYSTEM_DISK=r2` and configure the R2 credentials before accepting provider photos or verification documents; Render's normal container filesystem is ephemeral, so local-disk uploads do not survive deployments. If existing provider photos were uploaded to the local disk, upload them again after R2 is configured. Configure SMTP credentials in Render as well if password-reset emails need to reach users.
 
 ## Before inviting real users
 
