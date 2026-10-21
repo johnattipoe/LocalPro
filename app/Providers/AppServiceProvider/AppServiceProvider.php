@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Notifications\DatabaseNotification;
+use App\Models\Notification;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'adminPendingCount' => DB::table('provider_profiles')->where('verification_status', 'pending')->count(),
                 'adminOpenTicketsCount' => DB::table('support_tickets')->whereIn('status', ['open', 'in_progress'])->count(),
-                'adminUnreadCount' => DatabaseNotification::where('notifiable_id', auth()->id())->whereNull('read_at')->count(),
+                'adminUnreadCount' => Notification::where('user_id', auth()->id())->whereNull('read_at')->count(),
             ]);
         });
     }
