@@ -1,0 +1,45 @@
+@extends('layouts.admin.admin')
+
+@section('title', 'Provider verification | LocalPro')
+
+@section('content')
+<div class="admin-page-content">
+    <div class="requests-heading">
+        <div>
+            <div class="eyebrow muted">TRUST & SAFETY</div>
+            <h1>Provider verification</h1>
+            <p>Review provider registrations and approve profiles ready to appear in search.</p>
+        </div>
+        <a class="button" href="{{ route('admin.providers.index',['status'=>'pending']) }}">Pending review</a></div>@if(session('status'))
+        <div class="flash-note">✓ {{ session('status') }}</div>@endif @if($errors->any())
+        <div class="flash-note admin-flash-error" role="alert">{{ $errors->first() }}</div>@endif
+
+<nav class="filter-tabs">@foreach(['pending'=>'Pending','approved'=>'Approved','rejected'=>'Rejected','all'=>'All providers'] as $key=>$label)
+    <a class="{{ $status===$key?'selected':'' }}" href="{{ route('admin.providers.index',['status'=>$key]) }}">{{ $label }}</a>@endforeach
+</nav>
+<div class="admin-provider-list">@forelse($providers as $provider)
+    <article class="admin-provider-card">
+        <div class="profile-avatar">{{ mb_substr($provider->user->name,0,1) }}</div>
+        <div class="admin-provider-info">
+            <strong>{{ $provider->user->name }}</strong>
+            <span>{{ $provider->profession }} · {{ $provider->city }}, Volta Region</span>
+            <small>{{ $provider->user->email }}@if($provider->user->phone) · {{ $provider->user->phone }}@endif</small><p>{{ $provider->bio ?: 'No professional description provided.' }}</p>@foreach($provider->verifications as $document)
+            <small>
+                <a href="{{ route('admin.verification.download',$document) }}">Download {{ ucwords(str_replace('_',' ',$document->document_type)) }}</a> · {{ $document->status }}</small>@endforeach</div>
+                <span class="status-pill status-{{ $provider->verification_status }}">{{ ucfirst($provider->verification_status) }}</span>@if(in_array($provider->verification_status,['pending','rejected']))
+                <form method="POST" action="{{ route('admin.providers.update',$provider) }}">@csrf @method('PATCH')
+                    <input type="hidden" name="verification_status" value="approved">
+                    <button class="button" type="submit">{{ __('ui.approve') }}</button>
+                </form>@endif @if(in_array($provider->verification_status,['pending','approved']))
+                <form method="POST" action="{{ route('admin.providers.update',$provider) }}">@csrf @method('PATCH')<input type="hidden" name="verification_status" value="rejected">
+                <button class="button button-secondary" type="submit">Reject</button>
+            </form>@endif
+        </article>@empty
+        <section class="requests-empty">
+            <span class="empty-icon">✓</span>
+            <h2>No {{ $status==='all'?'providers':$status.' providers' }} to show</h2><p>Provider accounts will appear here when they register.</p>
+        </section>@endforelse</div>
+        <div class="pagination">{{ $providers->links() }}
+        </div>
+    </div>
+@endsection

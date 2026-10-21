@@ -19,9 +19,10 @@ class CreateAdminUser extends Command
             $this->error('Enter a name and a valid email address.');
             return self::FAILURE;
         }
-        if (User::where('email',$email)->exists()) {
-            $this->error('That email already belongs to an account.');
-            return self::FAILURE;
+        $existingUser = User::where('email', $email)->first();
+        if ($existingUser && ! $this->confirm('That email already belongs to an account. Promote it to an active administrator and set a new password?', false)) {
+            $this->line('No account changes were made.');
+            return self::SUCCESS;
         }
 
         $password = (string) $this->secret('Password (at least 12 characters)');
@@ -31,15 +32,26 @@ class CreateAdminUser extends Command
             return self::FAILURE;
         }
 
-        User::create([
-            'name'=>$name,
-            'email'=>$email,
-            'role'=>'admin',
-            'city'=>'Ho',
-            'is_active'=>true,
-            'password'=>Hash::make($password),
-        ]);
-        $this->info('Administrator account created. You can now sign in at /login.');
+        if ($existingUser) {
+            $existingUser->update([
+                'name' => $name,
+                'role' => 'admin',
+                'is_active' => true,
+                'password' => Hash::make($password),
+            ]);
+            $this->info('Existing account promoted to administrator with a new password. You can now sign in at /login.');
+        } else {
+            User::create([
+                'name' => $name,
+                'email' => $email,
+                'role' => 'admin',
+                'city' => 'Ho',
+                'is_active' => true,
+                'password' => Hash::make($password),
+            ]);
+            $this->info('Administrator account created. You can now sign in at /login.');
+        }
+
         return self::SUCCESS;
     }
 }

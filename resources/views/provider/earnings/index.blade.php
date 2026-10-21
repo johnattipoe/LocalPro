@@ -1,69 +1,24 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Earnings and payout requests | LocalPro</title>
-    @vite(['resources/css/app.css','resources/ts/app.ts'])
-</head>
-<body>
-<header class="topbar">
-    <a class="brand" href="{{ route('provider.dashboard') }}"><span class="brand-mark">&#10003;</span><span>local<span>pro</span><small>PROVIDER PORTAL</small></span></a>
-    <nav class="main-nav"><a href="{{ route('provider.dashboard') }}">Dashboard</a><a href="{{ route('provider.bookings.index') }}">Requests</a><a class="active" href="{{ route('provider.earnings.index') }}">Earnings</a></nav>
-</header>
-<main class="requests-page">
-    <div class="requests-heading"><div><div class="eyebrow muted">PAYMENT AND PAYOUT HISTORY</div><h1>Earnings</h1><p>See customer payments recorded against your completed jobs and track payout requests.</p></div></div>
-    @if(session('status'))<div class="flash-note" role="status">{{ session('status') }}</div>@endif
-    @if($errors->any())<div class="flash-note" role="alert">{{ $errors->first() }}</div>@endif
-
-    <section class="admin-stats provider-stats">
-        <article><small>PAYMENTS RECORDED FOR YOUR JOBS</small><strong>GHS {{ number_format((float) $paidTotal, 2) }}</strong></article>
-        <article><small>AVAILABLE TO REQUEST</small><strong>GHS {{ number_format($availablePayoutAmount, 2) }}</strong></article>
-    </section>
-
-    <section class="request-detail-card payout-explainer">
-        <div class="eyebrow muted">HOW MANUAL PAYOUT REQUESTS WORK</div>
-        <p>Request an amount from your available balance. A LocalPro administrator will review the request. If it is approved, the transfer must be made outside this website; the administrator then records the transfer reference here. A request or approval does not mean money has already been sent.</p>
-        <p>This version does not collect bank or mobile-money account details, automatically transfer money, or calculate a marketplace commission. Contact support if you need to update your payment arrangements.</p>
-        @if($profile->verification_status === 'approved' && $availablePayoutAmount > 0)
-            <form method="POST" action="{{ route('provider.payouts.store') }}" class="payout-request-form">
-                @csrf
-                <label for="payout-amount">Amount to request (GHS)</label>
-                <input id="payout-amount" name="amount" type="number" min="0.01" max="{{ number_format($availablePayoutAmount, 2, '.', '') }}" step="0.01" required value="{{ old('amount') }}">
-                <button class="button" type="submit">Request a manual payout</button>
-            </form>
-        @elseif($profile->verification_status !== 'approved')
-            <p><strong>Your provider profile must be approved before you can request a payout.</strong></p>
-        @else
-            <p>There is no unallocated paid balance available for a new request yet.</p>
-        @endif
-    </section>
-
-    <section class="request-detail-card">
-        <div class="admin-section-heading"><div><h2>Your payout requests</h2><p>Requests stay in this history after approval, rejection, or payment.</p></div></div>
-        @forelse($payoutRequests as $payout)
-            <article class="admin-request-row payout-history-row">
-                <div><strong>GHS {{ number_format((float) $payout->amount, 2) }}</strong><small>Requested {{ $payout->created_at->format('M j, Y') }}@if($payout->transfer_reference) - Reference {{ $payout->transfer_reference }}@endif</small>@if($payout->admin_note)<small>Admin note: {{ $payout->admin_note }}</small>@endif</div>
-                <span class="status-pill status-{{ $payout->status }}">{{ ucfirst($payout->status) }}</span>
-            </article>
-        @empty
-            <p class="admin-empty">You have not requested a payout yet.</p>
-        @endforelse
-        {{ $payoutRequests->links() }}
-    </section>
-
-    <section class="request-detail-card">
-        <div class="admin-section-heading"><div><h2>Customer payment records</h2><p>These are payments recorded by LocalPro against your jobs, not proof of provider transfer.</p></div></div>
-        @forelse($payments as $payment)
-            <article class="admin-request-row">
-                <div><strong>{{ $payment->booking->serviceRequest->category->name ?? 'Service request' }} - GHS {{ number_format((float) $payment->amount, 2) }}</strong><small>{{ $payment->customer->name }} - {{ $payment->created_at->format('M j, Y') }}</small></div>
-                <span class="status-pill status-{{ $payment->status }}">{{ ucfirst($payment->status) }}</span>
-            </article>
-        @empty
-            <p class="admin-empty">No customer payment records are linked to your jobs yet.</p>
-        @endforelse
-        {{ $payments->links() }}
-    </section>
-</main>
-</body>
-</html>
+@extends('layouts.provider-portal.provider-portal')
+@section('title', 'Earnings and payouts')
+@section('content')
+<div class="pp-page-heading"><div><span class="pp-eyebrow">PAYMENT AND PAYOUT HISTORY</span><h1>{{ __('ui.earnings') }}</h1><p>See customer payments recorded against your jobs and request a manual payout from your available balance.</p></div></div>
+@if($errors->any())<div class="pp-form-errors" role="alert"><strong>Action could not be completed.</strong><span>{{ $errors->first() }}</span></div>@endif
+<section class="pp-earnings-summary"><article class="pp-panel"><small>PAYMENTS RECORDED FOR YOUR JOBS</small><strong>GH₵ {{ number_format((float) $paidTotal, 2) }}</strong></article><article class="pp-panel"><small>AVAILABLE TO REQUEST</small><strong>GH₵ {{ number_format($availablePayoutAmount, 2) }}</strong></article></section>
+<section class="pp-panel pp-payout-info"><div class="pp-section-title"><div><h2>Manual provider payouts</h2><p>Requests are reviewed by the LocalPro admin team.</p></div></div><p>After approval, the transfer is made outside this website and the administrator records the transfer reference. Approval does not mean a transfer has already been sent. This version does not store bank or mobile-money details or send automatic transfers.</p>
+    @if($profile->verification_status === 'approved' && $availablePayoutAmount > 0)
+        <form method="POST" action="{{ route('provider.payouts.store') }}" class="pp-payout-request">@csrf<label for="payout-amount">Amount to request (GH₵)</label><input id="payout-amount" name="amount" type="number" min="0.01" max="{{ number_format($availablePayoutAmount, 2, '.', '') }}" step="0.01" required value="{{ old('amount') }}"><button class="pp-accept-button" type="submit">Request payout</button></form>
+    @elseif($profile->verification_status !== 'approved')
+        <p><strong>Your provider profile must be approved before you can request a payout.</strong> <a href="{{ route('provider.verification.index') }}">View verification</a></p>
+    @else
+        <p>No unallocated paid balance is available for a new payout request yet.</p>
+    @endif
+</section>
+<section class="pp-panel pp-earnings-history"><div class="pp-section-title"><div><h2>Your payout requests</h2><p>Requests remain listed after approval, rejection, or payment.</p></div></div>
+    @forelse($payoutRequests as $payout)<article class="pp-managed-service"><div class="pp-managed-service-copy"><strong>GH₵ {{ number_format((float) $payout->amount, 2) }}</strong><span>Requested {{ $payout->created_at->format('M j, Y') }}@if($payout->transfer_reference) · Reference {{ $payout->transfer_reference }}@endif</span>@if($payout->admin_note)<p>Admin note: {{ $payout->admin_note }}</p>@endif</div><span class="pp-status pp-status-{{ $payout->status }}">{{ ucfirst($payout->status) }}</span></article>@empty<div class="pp-empty"><strong>No payout requests yet</strong><p>Eligible providers can request available paid earnings above.</p></div>@endforelse
+    <div class="pp-pagination">{{ $payoutRequests->links() }}</div>
+</section>
+<section class="pp-panel pp-earnings-history"><div class="pp-section-title"><div><h2>Customer payment records</h2><p>These are payments recorded against your jobs, not proof that a provider transfer was made.</p></div></div>
+    @forelse($payments as $payment)<article class="pp-managed-service"><div class="pp-managed-service-copy"><strong>{{ $payment->booking?->serviceRequest?->category?->name ?? 'Service request' }} · GH₵ {{ number_format((float) $payment->amount, 2) }}</strong><span>{{ $payment->customer?->name ?? 'Customer' }} · {{ $payment->created_at->format('M j, Y') }}</span></div><span class="pp-status pp-status-{{ $payment->status }}">{{ ucfirst($payment->status) }}</span></article>@empty<div class="pp-empty"><strong>No customer payments yet</strong><p>Payment records linked to your jobs will appear here.</p></div>@endforelse
+    <div class="pp-pagination">{{ $payments->links() }}</div>
+</section>
+@endsection

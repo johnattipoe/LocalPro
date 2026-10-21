@@ -1,18 +1,16 @@
-@extends('layouts.admin')
+@extends('layouts.admin.admin')
 
 @section('title', 'Provider payout requests')
 
 @section('content')
 <section class="admin-content">
-    <div class="eyebrow muted">PROVIDER SETTLEMENTS</div>
-    <h1>Provider payout requests</h1>
-    <p class="request-intro">Review requests against the paid customer payment ledger. Transfers happen outside LocalPro. Verify the provider's payment instructions through your approved process before sending funds, then record the external transfer reference.</p>
+    <div class="admin-page-heading"><div><div class="eyebrow muted">PROVIDER SETTLEMENTS</div><h1>Provider payout requests</h1><p class="request-intro">Review requests against the paid customer payment ledger. Transfers happen outside LocalPro. Verify the provider's payment instructions through your approved process before sending funds, then record the external transfer reference.</p></div></div>
     @if(session('status'))<div class="flash-note" role="status">{{ session('status') }}</div>@endif
     @if($errors->any())<div class="flash-note" role="alert">{{ $errors->first() }}</div>@endif
 
     <div class="admin-table-wrap">
         <table class="admin-table">
-            <thead><tr><th>Requested</th><th>Provider</th><th>Amount</th><th>Status</th><th>Transfer reference</th><th>Review</th></tr></thead>
+            <thead><tr><th>Requested</th><th>{{ __('ui.provider') }}</th><th>Amount</th><th>{{ __('ui.status') }}</th><th>Transfer reference</th><th>Review</th></tr></thead>
             <tbody>
                 @forelse($payouts as $payout)
                     <tr>

@@ -1,1 +1,6 @@
-<p>Bookings have moved to your service request list. <a href="{{ route('customer.requests.index') }}">View my requests</a></p>
+@extends('layouts.customer-portal.customer-portal')
+@section('title', 'Bookings')
+@section('content')
+<div class="cp-page-heading"><div><span class="cp-eyebrow">YOUR SCHEDULE</span><h1>{{ __('ui.bookings') }}</h1><p>Appointments created from your service requests.</p></div><a class="cp-button" href="{{ route('professionals.index') }}">Find a professional</a></div>
+<section class="cp-panel cp-list-panel cp-bookings-list">@forelse($bookings as $booking)<a class="cp-record-row" href="{{ route('customer.bookings.show', $booking) }}"><span class="cp-record-icon">▣</span><span class="cp-record-main"><strong>{{ $booking->serviceRequest->category->name ?? 'Service booking' }}</strong><small>{{ $booking->provider->user->name ?? 'Professional' }} · {{ $booking->scheduled_at?->format('M j, Y · g:i A') ?? 'Date to be arranged' }}</small></span><span class="cp-status cp-status-{{ str_replace('_','-', $booking->status) }}">{{ ucfirst(str_replace('_',' ', $booking->status)) }}</span><span class="cp-arrow">›</span></a>@empty<div class="cp-empty"><span>▣</span><strong>No bookings yet</strong><p>Once a professional accepts a request, your booking will show here.</p><a href="{{ route('customer.requests.index') }}">View my requests →</a></div>@endforelse</section><div class="cp-pagination">{{ $bookings->links() }}</div>
+@endsection

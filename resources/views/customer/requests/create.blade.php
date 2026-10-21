@@ -1,15 +1,7 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Request {{ $provider->profession }} service | LocalPro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/ts/app.ts'])
-</head>
-<body>
-<header class="topbar"><a class="brand" href="{{ route('home') }}"><span class="brand-mark">&#10003;</span><span>local<span>pro</span><small>VOLTA REGION</small></span></a><a class="login-link" href="{{ route('customer.requests.index') }}">My requests</a></header>
-<main class="request-page">
+@extends('layouts.customer-portal.customer-portal')
+@section('title', 'Request a service')
+@section('content')
+<section class="request-page cp-request-legacy">
     <a class="text-link" href="{{ route('providers.show', $provider) }}">&larr; Back to {{ $provider->user->name }}'s profile</a>
     <div class="request-layout">
         <section class="request-form-card">
@@ -54,12 +46,13 @@
             <div class="profile-avatar">{{ mb_substr($provider->user->name, 0, 1) }}</div>
             <span class="verified-filter">&#10003; VERIFIED</span>
             <h2>{{ $provider->user->name }}</h2><p>{{ $provider->profession }}</p>
-            <div class="provider-info-line">Ho, Volta Region</div>
+            <div class="provider-info-line">{{ $provider->city }}, {{ $provider->region }}</div>
+            @if($provider->service_area)<div class="provider-info-line">Serving {{ $provider->service_area }}</div>@endif
             <div class="provider-info-line">&#9733; {{ number_format($provider->average_rating, 1) }} rating from {{ $provider->review_count }} reviews</div>
             <div class="provider-info-line">Starting at @if($provider->starting_price)GH&#8373; {{ number_format($provider->starting_price, 2) }}@else quote on request @endif</div>
+            @if($provider->availability)<div class="provider-info-line provider-request-availability"><strong>{{ __('ui.availability') }}</strong><span>{{ implode(', ', $provider->availability['days'] ?? []) ?: 'Contact to confirm' }}</span>@if($provider->availability['start'] ?? null)<span>{{ $provider->availability['start'] }}–{{ $provider->availability['end'] ?? '' }}</span>@endif</div>@endif
             <p class="privacy-note">Your contact details are shared only to coordinate this request.</p>
         </aside>
     </div>
-</main>
-</body>
-</html>
+</section>
+@endsection

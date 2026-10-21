@@ -12,7 +12,7 @@ LocalPro is a Laravel marketplace MVP for finding trusted local service professi
 - Search filters for service, town, rating, and indicative starting price.
 - Customer service requests, provider quotes and scheduling, status tracking, and request scoped messaging.
 - In-app notifications and customer reviews after completed jobs.
-- A support inbox for account, verification, payment, safety, and booking concerns. Customers and providers can include a related request number; admins can track a case and email a reply.
+- A support inbox for account, verification, payment, safety, and booking concerns. Customers can open a linked dispute from an accepted or completed request; admins can track the case, update its status, and email a reply.
 - Provider payout requests against recorded customer payments, with administrator review and external transfer reference tracking. No bank details are collected and no transfer is sent by LocalPro.
 - Customer, provider, and admin dashboards, plus admin account, category, review, request, and payment ledger screens.
 - SQLite is configured for local development. MySQL remains available through Laravel's database configuration for deployment.
@@ -27,6 +27,34 @@ LocalPro is a Laravel marketplace MVP for finding trusted local service professi
 6. Create the initial admin interactively with `php artisan localpro:make-admin`.
 7. Start Laravel with `php artisan serve` and open the address it prints.
 
+## Deploy on Render with Docker
+
+The repository includes a multi-stage `Dockerfile` that installs PHP dependencies, compiles the Vite assets, and serves Laravel with Apache on Render's default port `10000`. The container start script caches Laravel configuration, runs pending migrations with `--force`, creates Laravel's public storage link, and starts Apache.
+
+1. Push this repository to GitHub. `.env` is excluded from the Docker build and must never be committed.
+2. In Render, create a **Web Service**, connect the GitHub repository, and choose **Docker** as the runtime. Render will use the repository's `Dockerfile`; leave custom build and start commands unset.
+3. Add the production environment variables in Render's **Environment** page:
+
+   | Key | Value |
+   | --- | --- |
+   | `APP_ENV` | `production` |
+   | `APP_DEBUG` | `false` |
+   | `APP_KEY` | A new key from `php artisan key:generate --show` (do not reuse the local key) |
+   | `APP_URL` | The HTTPS URL Render assigns to the service |
+   | `DB_CONNECTION` | `pgsql` |
+   | `DATABASE_URL` | Your database's PostgreSQL connection URL; use the Render internal URL for a same-region Render database, or your Supabase connection URL |
+   | `DB_SSLMODE` | `require` when your database requires TLS |
+   | `DB_SEARCH_PATH` | `laravel` if your tables are in the Supabase `laravel` schema; otherwise use the schema containing your tables, often `public` |
+   | `FILESYSTEM_DISK` | `r2` |
+   | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT` | The credentials, bucket name, and S3 endpoint from Cloudflare R2 |
+   | `R2_DEFAULT_REGION` | `auto` |
+
+   Add database passwords and R2 credentials as private environment values in Render. Do not put them in this README or commit them. For Supabase, use its PostgreSQL connection URI. For Render Postgres, create the database in the same region as the web service and copy its **internal** URL.
+4. Deploy. On startup, the container runs `php artisan migrate --force`; check Render's deploy logs for migration or connection errors.
+5. After deployment, create the first administrator through the Render service shell with `php artisan localpro:make-admin`. Test registration, login, password reset with a configured production mailer, provider document upload/download, and the admin verification flow.
+
+The app uses file cache, file sessions, and a synchronous queue by default, so Memcached and Redis are not required for a single Render instance. R2 must be configured before accepting provider verification documents; Render's normal container filesystem is ephemeral. Configure SMTP credentials in Render as well if password-reset emails need to reach users.
+
 ## Before inviting real users
 
 - Set `APP_NAME`, `APP_URL`, and a private `APP_KEY` for the target environment. Never reuse a local key in a public deployment.
@@ -39,7 +67,7 @@ LocalPro is a Laravel marketplace MVP for finding trusted local service professi
 
 ## Payments and payouts
 
-Paystack checkout is available after configuration. Set `PAYSTACK_SECRET_KEY` in `.env`, set `APP_URL` to the public HTTPS URL, and configure the Paystack webhook to `https://your-domain/api/paystack/webhook`. The callback and webhook verify transaction status, amount, currency, and webhook signature before recording a payment. The Paystack merchant account receives the full collected amount. Providers can submit payout requests from the earnings page and administrators can approve, reject, or record them as paid after an external transfer. LocalPro does not collect bank details or send the transfer. Provider split settlement, automated transfers, refunds, chargeback handling, and payout account onboarding are not implemented. Decide commission, payout, refund, and transfer-verification rules before enabling live payments.
+Paystack checkout is available after configuration. For local development, put a Paystack **test** secret key in the private `.env` as `PAYSTACK_SECRET_KEY=sk_test_...`; never commit or share the key. Set `APP_URL` to the URL customers use to reach the app. The return callback works during local testing, but Paystack webhooks need a publicly reachable HTTPS URL. After deployment, configure the Paystack webhook as `https://your-domain/api/paystack/webhook`. The callback and webhook verify transaction status, reference, amount, currency, and webhook signature before recording a payment. The Paystack merchant account receives the full collected amount. Providers can submit payout requests from the earnings page and administrators can approve, reject, or record them as paid after an external transfer. LocalPro does not collect bank details or send the transfer. Provider split settlement, automated transfers, refunds, chargeback handling, and payout account onboarding are not implemented. Decide commission, payout, refund, and transfer-verification rules before enabling live payments.
 
 ## Current service boundaries
 

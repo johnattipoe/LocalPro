@@ -1,0 +1,6 @@
+@extends('layouts.customer-portal.customer-portal')
+@section('title', 'Job history')
+@section('content')
+<div class="cp-page-heading"><div><span class="cp-eyebrow">COMPLETED AND CLOSED</span><h1>Job history</h1><p>Completed work and cancelled requests from your LocalPro account.</p></div></div>
+<section class="cp-panel cp-list-panel cp-history-list">@forelse($requests as $item)<a class="cp-record-row" href="{{ route('customer.requests.show', $item) }}"><span class="cp-record-icon">{{ $item->status === 'completed' ? '✓' : '×' }}</span><span class="cp-record-main"><strong>{{ $item->category->name ?? 'Service request' }}</strong><small>{{ $item->provider->user->name ?? 'Professional' }} · {{ $item->created_at->format('M j, Y') }}</small></span><span class="cp-status cp-status-{{ str_replace('_','-', $item->status) }}">{{ ucfirst($item->status) }}</span><span class="cp-arrow">›</span></a>@empty<div class="cp-empty"><span>◷</span><strong>No completed jobs yet</strong><p>Completed and cancelled service requests will be kept here.</p><a href="{{ route('professionals.index') }}">Find a professional →</a></div>@endforelse</section><div class="cp-pagination">{{ $requests->links() }}</div>
+@endsection

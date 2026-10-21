@@ -1,0 +1,2 @@
+<!doctype html><html lang="{{ str_replace('_', '-', app()->getLocale()) }}"><head>
+    <link rel="icon" type="image/png" href="{{ asset('logo/localpro-mark.png') }}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>@yield('title','Your LocalPro account')</title>@vite(['resources/css/app.css','resources/ts/app/app.ts'])</head><body>@include('components.navbar.navbar')<main class="requests-page">@yield('content')</main>@include('components.footer.footer')</body></html>

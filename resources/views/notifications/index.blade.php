@@ -1,1 +1,17 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Notifications | LocalPro</title>@vite(['resources/css/app.css','resources/ts/app.ts'])</head><body><header class="topbar"><a class="brand" href="{{ route('home') }}"><span class="brand-mark">✓</span><span>local<span>pro</span><small>VOLTA REGION</small></span></a><nav class="main-nav"><a href="{{ route('home') }}">Home</a><a class="active" href="{{ route('notifications.index') }}">Notifications</a></nav></header><main class="requests-page"><div class="requests-heading"><div><div class="eyebrow muted">ACCOUNT UPDATES</div><h1>Notifications</h1><p>Updates about your requests and conversations.</p></div></div><div class="request-detail-card">@forelse($notifications as $notification)<article class="notification-row"><span class="notification-dot"></span><div><strong>{{ $notification->title }}</strong><p>{{ $notification->body }}</p><small>{{ $notification->created_at->diffForHumans() }}</small></div></article>@empty<p class="admin-empty">You’re all caught up. Notifications will appear here.</p>@endforelse</div><div class="pagination">{{ $notifications->links() }}</div></main></body></html>
+@extends(auth()->user()->role === 'customer' ? 'layouts.customer-portal.customer-portal' : (auth()->user()->role === 'provider' ? 'layouts.provider-portal.provider-portal' : 'layouts.admin.admin'))
+@section('title', 'Notifications')
+@section('content')
+<div class="cp-page-heading"><div><span class="cp-eyebrow">ACCOUNT UPDATES</span><h1>{{ __('ui.notifications') }}</h1><p>Updates about your requests and conversations.</p></div></div>
+<section class="cp-panel cp-list-panel cp-notifications" aria-label="Recent notifications">
+    @forelse($notifications as $notification)
+        <article class="cp-record-row">
+            <span class="cp-record-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+            <span class="cp-record-main"><strong>{{ $notification->title }}</strong><small>{{ $notification->body }}</small></span>
+            <time class="cp-record-time" datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+        </article>
+    @empty
+        <div class="cp-empty"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><strong>You are all caught up</strong><p>Notifications about your account and service requests will appear here.</p></div>
+    @endforelse
+</section>
+<div class="cp-pagination">{{ $notifications->links() }}</div>
+@endsection

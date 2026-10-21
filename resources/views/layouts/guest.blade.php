@@ -1,1 +1,0 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>@yield('title','LocalPro | Volta Region')</title>@vite(['resources/css/app.css','resources/ts/app.ts'])</head><body>@include('components.navbar')<main>@yield('content')</main>@include('components.footer')</body></html>

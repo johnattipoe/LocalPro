@@ -1,12 +1,10 @@
-@extends('layouts.admin')
+@extends('layouts.admin.admin')
 
 @section('title', 'Support inbox')
 
 @section('content')
 <section class="admin-content">
-    <div class="eyebrow muted">CUSTOMER CARE</div>
-    <h1>Support inbox</h1>
-    <p class="request-intro">Review account questions, verification concerns, and booking problems. Keep replies clear, factual, and tied to the case history.</p>
+    <div class="admin-page-heading"><div><div class="eyebrow muted">CUSTOMER CARE</div><h1>Support inbox</h1><p class="request-intro">Review account questions, verification concerns, and booking problems. Keep replies clear, factual, and tied to the case history.</p></div></div>
 
     @if(session('status'))<div class="flash-note">{{ session('status') }}</div>@endif
 
