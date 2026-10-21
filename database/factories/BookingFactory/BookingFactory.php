@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BookingFactory extends Factory
 {
-    protected $model = Booking::class;
+    protected $model = 'App\\Models\\Booking';
 
     public function definition(): array
     {
