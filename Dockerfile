@@ -1,7 +1,11 @@
-FROM php:8.2-apache-bookworm AS php-base
+FROM php:8.2.35-apache-bookworm AS php-base
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 ENV PORT=10000
+
+# Keep upload progress disabled until PHP ships the next regular fix for
+# CVE-2026-115560. This setting is applied globally before request parsing.
+RUN printf 'session.upload_progress.enabled=0\n' > /usr/local/etc/php/conf.d/zz-localpro-security.ini
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libonig-dev libpq-dev libzip-dev unzip \
