@@ -11,9 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class BookingService
 {
-    public function __construct(private NotificationService $notifications)
-    {
-    }
+    public function __construct(private NotificationService $notifications) {}
 
     public function transitionByProvider(ServiceRequest $serviceRequest, User $provider, string $status, array $bookingFields = []): void
     {
@@ -34,9 +32,13 @@ class BookingService
 
             $this->notifications->send(
                 $lockedRequest->customer,
-                'Request ' . $status,
-                $provider->name . ' marked your request as ' . $status . '.'
+                'Request '.$status,
+                $provider->name.' marked your request as '.$status.'.'
             );
+
+            if ($status === 'completed' && $booking->isRecurring()) {
+                $this->createNextOccurrence($booking);
+            }
         });
     }
 
@@ -54,7 +56,7 @@ class BookingService
             $this->notifications->send(
                 $lockedRequest->customer,
                 'Booking details updated',
-                $provider->name . ' updated the quote or schedule for your accepted request.'
+                $provider->name.' updated the quote or schedule for your accepted request.'
             );
         });
     }
@@ -75,8 +77,55 @@ class BookingService
             $this->notifications->send(
                 $lockedRequest->provider->user,
                 'Service request cancelled',
-                $customer->name . ' cancelled their service request.'
+                $customer->name.' cancelled their service request.'
             );
         });
+    }
+
+    public function createRecurringBooking(Booking $parent, string $pattern, int $occurrences): void
+    {
+        if (! in_array($pattern, ['weekly', 'monthly'], true)) {
+            throw ValidationException::withMessages(['recurrence_pattern' => 'Pattern must be weekly or monthly.']);
+        }
+
+        $parent->update([
+            'recurrence_pattern' => $pattern,
+            'occurrence_count' => $occurrences,
+            'next_occurrence' => $parent->scheduled_at,
+        ]);
+    }
+
+    protected function createNextOccurrence(Booking $completed): void
+    {
+        if ($completed->occurrence_count <= 1) {
+            return;
+        }
+
+        $nextDate = $completed->nextOccurrenceDate();
+        if (! $nextDate) {
+            return;
+        }
+
+        $next = Booking::create([
+            'customer_id' => $completed->customer_id,
+            'provider_profile_id' => $completed->provider_profile_id,
+            'service_request_id' => null,
+            'scheduled_at' => $nextDate,
+            'quoted_price' => $completed->quoted_price,
+            'final_price' => null,
+            'status' => 'pending',
+            'recurrence_pattern' => $completed->recurrence_pattern,
+            'parent_booking_id' => $completed->id,
+            'next_occurrence' => $nextDate,
+            'occurrence_count' => $completed->occurrence_count - 1,
+        ]);
+
+        $completed->update(['next_occurrence' => $nextDate, 'occurrence_count' => $completed->occurrence_count - 1]);
+
+        $this->notifications->send(
+            $completed->customer,
+            'Upcoming recurring booking',
+            'Your next '.$completed->recurrence_pattern.' booking is scheduled for '.$nextDate->format('M j, Y · g:i A').'.'
+        );
     }
 }

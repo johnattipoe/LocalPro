@@ -1,4 +1,8 @@
+import '../../js/bootstrap/bootstrap';
+import '../../css/provider-card.css';
+import '../../css/home-provider-heading.css';
 import * as AOS from 'aos';
+// @ts-ignore TypeScript does not have declarations for this CSS side-effect import.
 import 'aos/dist/aos.css';
 import {
     ArrowRight,
@@ -10,11 +14,13 @@ import {
     Brush,
     Camera,
     CalendarDays,
+    CalendarCheck,
     ChartNoAxesColumnIncreasing,
     ChartNoAxesCombined,
     Check,
     ChevronDown,
     CircleDollarSign,
+    CircleCheck,
     CircleAlert,
     Cookie,
     Compass,
@@ -22,6 +28,7 @@ import {
     ClipboardCheck,
     ClipboardList,
     CircleHelp,
+    Clock,
     Clock3,
     CreditCard,
     Droplets,
@@ -32,9 +39,10 @@ import {
     EyeOff,
     Handshake,
     Hammer,
-    History,
-    Home,
-    LifeBuoy,
+        Heart,
+        History,
+        Home,
+        LifeBuoy,
     LockKeyhole,
     LogIn,
     LogOut,
@@ -43,9 +51,13 @@ import {
     MapPin,
     MapPinned,
     Menu,
+    Mic,
     PanelLeftClose,
     MessageCircle,
+    MessageSquareText,
+    PhoneOff,
     Search,
+    Repeat2,
     Share2,
     Settings,
     Shirt,
@@ -60,6 +72,7 @@ import {
     Truck,
     UserRound,
     UsersRound,
+    Video,
     Wallet,
     Workflow,
     Info,
@@ -100,6 +113,53 @@ document.addEventListener('keydown', (event) => {
     openMenu.open = false;
     openMenu.querySelector<HTMLElement>('summary')?.focus();
 });
+
+const authDialogs = Array.from(document.querySelectorAll<HTMLDialogElement>('[data-auth-dialog]'));
+const authDialogFor = (name: string): HTMLDialogElement | undefined =>
+    authDialogs.find((dialog) => dialog.dataset.authDialog === name);
+
+const openAuthDialog = (name: string): void => {
+    authDialogs.forEach((dialog) => {
+        if (dialog.open) dialog.close();
+    });
+    const dialog = authDialogFor(name);
+    if (!dialog) return;
+    dialog.showModal();
+    dialog.querySelector<HTMLElement>('input:not([type="hidden"]), select')?.focus({ preventScroll: true });
+};
+
+document.querySelectorAll<HTMLAnchorElement>('[data-open-auth]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+        const dialogName = link.dataset.openAuth;
+        if (!dialogName || !authDialogFor(dialogName)) return;
+        event.preventDefault();
+        openAuthDialog(dialogName);
+    });
+});
+
+document.querySelectorAll<HTMLButtonElement>('[data-close-auth]').forEach((button) => {
+    button.addEventListener('click', () => button.closest<HTMLDialogElement>('[data-auth-dialog]')?.close());
+});
+
+authDialogs.forEach((dialog) => {
+    dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) dialog.close();
+    });
+    if (dialog.hasAttribute('data-auto-open')) dialog.showModal();
+});
+
+const modalRoleSelect = document.querySelector<HTMLSelectElement>('[data-modal-account-role]');
+const modalProviderFields = document.querySelector<HTMLElement>('[data-modal-provider-fields]');
+const modalProfessionInput = modalProviderFields?.querySelector<HTMLInputElement | HTMLSelectElement>('input[name="profession"], select[name="profession"]');
+const syncModalProviderFields = (): void => {
+    if (!modalRoleSelect || !modalProviderFields || !modalProfessionInput) return;
+    const providerSelected = modalRoleSelect.value === 'provider';
+    modalProviderFields.hidden = !providerSelected;
+    modalProfessionInput.required = providerSelected;
+    modalProfessionInput.disabled = !providerSelected;
+};
+modalRoleSelect?.addEventListener('change', syncModalProviderFields);
+syncModalProviderFields();
 
 function dismissSuccessToast(): void {
     if (!successToast) return;
@@ -425,6 +485,7 @@ import '../booking/booking';
 import '../dashboard/dashboard';
 import '../messaging/messaging';
 import '../search/search';
+import '../../css/admin-provider-verification.css';
 
 const pageLoader = document.createElement('div');
 pageLoader.className = 'page-loader';
@@ -461,6 +522,117 @@ backToTop.title = 'Back to top';
 backToTop.innerHTML = '<i data-lucide="arrow-up" aria-hidden="true"></i>';
 backToTop.hidden = true;
 document.body.append(backToTop);
+
+function initializeFloatingChat(): void {
+const floatingChat = document.createElement('button');
+floatingChat.className = 'floating-chat';
+floatingChat.type = 'button';
+floatingChat.setAttribute('aria-label', 'Open LocalPro help chat');
+floatingChat.setAttribute('aria-expanded', 'false');
+floatingChat.setAttribute('aria-controls', 'localpro-chat-panel');
+floatingChat.title = 'Chat with LocalPro';
+floatingChat.innerHTML = '<i data-lucide="message-circle" aria-hidden="true"></i>';
+document.body.append(floatingChat);
+
+const chatPanel = document.createElement('section');
+chatPanel.className = 'localpro-chat-panel';
+chatPanel.id = 'localpro-chat-panel';
+chatPanel.setAttribute('aria-label', 'LocalPro help chat');
+chatPanel.hidden = true;
+chatPanel.innerHTML = `
+    <header class="localpro-chat-header"><span class="localpro-chat-mark"><i data-lucide="message-circle" aria-hidden="true"></i></span><span><strong>LocalPro AI Help</strong><small>Ask about using LocalPro</small></span><button type="button" class="localpro-chat-close" aria-label="Close chat"><i data-lucide="x" aria-hidden="true"></i></button></header>
+    <div class="localpro-chat-messages" role="log" aria-live="polite" aria-relevant="additions text"><p class="localpro-chat-bubble is-bot">Hi! I can help you find a professional, manage a booking, understand payments, or use your account. What would you like help with?</p></div>
+    <div class="localpro-chat-suggestions"><button type="button">Find a professional</button><button type="button">Manage a booking</button><button type="button">Payments</button></div>
+    <form class="localpro-chat-form"><label class="visually-hidden" for="localpro-chat-input">Your message</label><input id="localpro-chat-input" name="message" type="text" maxlength="500" placeholder="Type your messageâ€¦" autocomplete="off" required><button type="submit" aria-label="Send message"><i data-lucide="arrow-up" aria-hidden="true"></i></button></form>
+    <a class="localpro-chat-human" href="/contact">Need a person? Contact support</a>`;
+document.body.append(chatPanel);
+
+const chatMessages = chatPanel.querySelector<HTMLElement>('.localpro-chat-messages');
+const chatForm = chatPanel.querySelector<HTMLFormElement>('.localpro-chat-form');
+const chatInput = chatPanel.querySelector<HTMLInputElement>('#localpro-chat-input');
+const chatSendButton = chatForm?.querySelector<HTMLButtonElement>('button[type="submit"]');
+const chatHistory: Array<{ role: 'user' | 'model'; text: string }> = [];
+
+function addChatMessage(message: string, sender: 'bot' | 'user'): void {
+    if (!chatMessages) return;
+    const bubble = document.createElement('p');
+    bubble.className = `localpro-chat-bubble is-${sender}`;
+    bubble.textContent = message;
+    chatMessages.append(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendChatMessage(message: string): Promise<void> {
+    addChatMessage(message, 'user');
+    chatHistory.push({ role: 'user', text: message });
+    if (chatInput) chatInput.value = '';
+    if (chatSendButton) chatSendButton.disabled = true;
+
+    const thinking = document.createElement('p');
+    thinking.className = 'localpro-chat-bubble is-bot is-thinking';
+    thinking.textContent = 'Thinkingâ€¦';
+    chatMessages?.append(thinking);
+    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+        const xsrfCookie = document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.slice('XSRF-TOKEN='.length);
+        const csrfMeta = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+        const csrfToken = csrfMeta || (xsrfCookie ? decodeURIComponent(xsrfCookie) : '');
+        const response = await fetch('/assistant/chat', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+            },
+            body: JSON.stringify({ messages: chatHistory.slice(-10) }),
+        });
+        const result = await response.json() as { reply?: string; message?: string };
+        if (!response.ok || !result.reply) {
+            throw new Error(result.message || 'The assistant is temporarily unavailable. Please try again.');
+        }
+        chatHistory.push({ role: 'model', text: result.reply });
+        thinking.remove();
+        addChatMessage(result.reply, 'bot');
+    } catch (error) {
+        thinking.remove();
+        addChatMessage(error instanceof Error ? error.message : 'I could not send that message. Please try again.', 'bot');
+    } finally {
+        if (chatSendButton) chatSendButton.disabled = false;
+        chatInput?.focus();
+    }
+}
+
+floatingChat.addEventListener('click', () => {
+    chatPanel.hidden = !chatPanel.hidden;
+    floatingChat.setAttribute('aria-expanded', String(!chatPanel.hidden));
+    if (!chatPanel.hidden) chatInput?.focus();
+});
+chatPanel.querySelector('.localpro-chat-close')?.addEventListener('click', () => {
+    chatPanel.hidden = true;
+    floatingChat.setAttribute('aria-expanded', 'false');
+    floatingChat.focus();
+});
+chatForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const message = chatInput?.value.trim();
+    if (!message) return;
+    void sendChatMessage(message);
+});
+chatPanel.querySelectorAll<HTMLButtonElement>('.localpro-chat-suggestions button').forEach((suggestion) => {
+    suggestion.addEventListener('click', () => {
+        const message = suggestion.textContent?.trim() ?? '';
+        if (!message) return;
+        void sendChatMessage(message);
+        chatInput?.focus();
+    });
+});
+}
+
+if (document.body.classList.contains('public-site')) {
+    initializeFloatingChat();
+}
 
 const pageIconBySegment: Record<string, string> = {
     about: 'circle-help',
@@ -523,12 +695,15 @@ createIcons({
         Brush,
         Camera,
         CalendarDays,
+        CalendarCheck,
         ChartNoAxesColumnIncreasing,
         ChartNoAxesCombined,
         Check,
         ChevronDown,
         CircleDollarSign,
+        CircleCheck,
         CircleAlert,
+        Clock,
         Cookie,
         Compass,
         Database,
@@ -543,11 +718,15 @@ createIcons({
         FileText,
         Eye,
         EyeOff,
-        Handshake,
+    Handshake,
         Hammer,
+        Heart,
         History,
         Home,
         LifeBuoy,
+        Mic,
+        PhoneOff,
+        Video,
         LockKeyhole,
         LogIn,
         LogOut,
@@ -558,7 +737,9 @@ createIcons({
         Menu,
         PanelLeftClose,
         MessageCircle,
+        MessageSquareText,
         Search,
+        Repeat2,
         Share2,
         Settings,
         Shirt,

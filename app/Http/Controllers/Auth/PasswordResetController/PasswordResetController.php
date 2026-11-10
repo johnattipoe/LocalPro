@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class PasswordResetController extends Controller
 {
@@ -19,7 +20,11 @@ class PasswordResetController extends Controller
     public function sendLink(Request $request)
     {
         $request->validate(['email' => ['required', 'email', 'max:180']]);
-        Password::sendResetLink($request->only('email'));
+        try {
+            Password::sendResetLink($request->only('email'));
+        } catch (TransportExceptionInterface $exception) {
+            report($exception);
+        }
 
         // Keep the response the same for known, unknown, and throttled email addresses.
         // That prevents this form from revealing which addresses have LocalPro accounts.
@@ -27,7 +32,7 @@ class PasswordResetController extends Controller
             ? 'If an account exists for that email, reset instructions were written to the local application log.'
             : 'If an account exists for that email, a reset link will be sent shortly.';
 
-        return back()->with('status', $confirmation);
+        return back()->with('status', $confirmation)->with('open_auth_modal', 'forgot');
     }
 
     public function resetForm(Request $request, string $token)

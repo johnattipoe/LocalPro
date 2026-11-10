@@ -8,7 +8,7 @@
     <title>@yield('title', 'LocalPro — Volta Region')</title>
     @vite(['resources/css/app.css', 'resources/ts/app/app.ts'])
 </head>
-<body>
+<body class="public-site">
     @yield('content')
 </body>
 </html>

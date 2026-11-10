@@ -58,9 +58,15 @@
                     @csrf
                     <div class="reset-field">
                         <label for="email">{{ __('ui.email_address') }}</label>
-                        <div class="reset-input-wrap">
-                            <i data-lucide="mail" aria-hidden="true"></i>
-                            <input id="email" name="email" type="email" value="{{ old('email') }}" required maxlength="180" autocomplete="email" placeholder="you@example.com" autofocus>
+                        <div class="reset-input-wrap reset-input-gmail">
+                            <svg class="gmail-field-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="#4285F4" d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v.2l10 6.3 10-6.3V6z"/>
+                                <path fill="#34A853" d="M22 7.7l-10 6.3L2 7.7V18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7.7z"/>
+                                <path fill="#EA4335" d="M20 4H4C2.9 4 2 4.9 2 6v.4l10 6.3 10-6.3V6c0-1.1-.9-2-2-2z"/>
+                                <path fill="#FBBC05" d="M2 7.7V18c0 .2.04.4.1.6l6.8-6.8L2 7.7z"/>
+                                <path fill="#4285F4" d="M22 7.7l-6.9 4.1 6.8 6.8c.06-.2.1-.4.1-.6V7.7z"/>
+                            </svg>
+                            <input id="email" name="email" type="email" value="{{ old('email') }}" required maxlength="180" autocomplete="email" placeholder="you@gmail.com" autofocus>
                         </div>
                         @error('email')<small class="reset-email-error" role="alert">{{ $message }}</small>@enderror
                     </div>

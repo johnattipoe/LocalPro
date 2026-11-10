@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="vapid-public-key" content="{{ config('services.push.vapid_public') }}">
     <title>@yield('title', 'LocalPro administration')</title>
     @vite(['resources/css/app.css','resources/ts/app/app.ts'])
 </head>

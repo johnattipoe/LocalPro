@@ -11,6 +11,7 @@ use App\Models\ServiceCategory;
 use App\Models\ServiceRequest;
 use App\Models\SupportTicket;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -80,7 +81,7 @@ class AdminDashboardController extends Controller
         return view('admin.dashboard', compact('stats', 'chart', 'chartPoints', 'chartMax', 'categories', 'categoryTotal', 'donutBackground', 'pendingProviders', 'recentBookings', 'activities'));
     }
 
-    private function changePercent($query, Carbon $monthStart, Carbon $previousStart, Carbon $previousEnd): int
+    private function changePercent(Builder $query, Carbon $monthStart, Carbon $previousStart, Carbon $previousEnd): int
     {
         $current = (clone $query)->where('created_at', '>=', $monthStart)->count();
         $previous = (clone $query)->whereBetween('created_at', [$previousStart, $previousEnd])->count();

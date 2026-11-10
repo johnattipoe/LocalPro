@@ -57,20 +57,42 @@
 
                     <div class="reset-field">
                         <label for="password">{{ __('ui.password') }}</label>
-                        <div class="reset-input-wrap">
-                            <i data-lucide="lock-keyhole" aria-hidden="true"></i>
+                        <div class="reset-input-wrap reset-input-password">
+                            <svg class="password-field-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="#5f6368" d="M12 2C9.24 2 7 4.24 7 7v3H6c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-1V7c0-2.76-2.24-5-5-5zm-3 5c0-1.66 1.34-3 3-3s3 1.34 3 3v3H9V7z"/>
+                                <rect x="4" y="10" width="16" height="12" rx="2.5" fill="#4285F4"/>
+                                <circle cx="12" cy="15" r="1.5" fill="#FBBC05"/>
+                                <path d="M12 16.5V19" stroke="#FBBC05" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
                             <input id="password" type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="Enter your new password" aria-describedby="password-hint">
-                            <button class="reset-password-toggle" type="button" data-password-toggle="password" aria-label="Show new password" aria-pressed="false"><i data-lucide="eye" aria-hidden="true"></i></button>
+                            <button class="reset-password-toggle password-toggle-btn" type="button" data-password-toggle="password" aria-label="Show new password" aria-pressed="false">
+                                <svg class="password-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path class="eye-open" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle class="eye-open" cx="12" cy="12" r="3"/>
+                                    <path class="eye-closed" d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M2 2l20 20"/>
+                                </svg>
+                            </button>
                         </div>
                         <small id="password-hint" class="reset-field-hint">Use at least 8 characters.</small>
                     </div>
 
                     <div class="reset-field">
                         <label for="password_confirmation">{{ __('ui.confirm_password') }}</label>
-                        <div class="reset-input-wrap">
-                            <i data-lucide="lock-keyhole" aria-hidden="true"></i>
+                        <div class="reset-input-wrap reset-input-password">
+                            <svg class="password-field-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="#5f6368" d="M12 2C9.24 2 7 4.24 7 7v3H6c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-1V7c0-2.76-2.24-5-5-5zm-3 5c0-1.66 1.34-3 3-3s3 1.34 3 3v3H9V7z"/>
+                                <rect x="4" y="10" width="16" height="12" rx="2.5" fill="#4285F4"/>
+                                <circle cx="12" cy="15" r="1.5" fill="#FBBC05"/>
+                                <path d="M12 16.5V19" stroke="#FBBC05" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
                             <input id="password_confirmation" type="password" name="password_confirmation" required minlength="8" autocomplete="new-password" placeholder="Confirm your new password">
-                            <button class="reset-password-toggle" type="button" data-password-toggle="password_confirmation" aria-label="Show confirmed password" aria-pressed="false"><i data-lucide="eye" aria-hidden="true"></i></button>
+                            <button class="reset-password-toggle password-toggle-btn" type="button" data-password-toggle="password_confirmation" aria-label="Show confirmed password" aria-pressed="false">
+                                <svg class="password-eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path class="eye-open" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                    <circle class="eye-open" cx="12" cy="12" r="3"/>
+                                    <path class="eye-closed" d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M2 2l20 20"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
@@ -83,5 +105,20 @@
     </div>
 </main>
 @include('components.cookie-consent.cookie-consent')
+<script>
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-password-toggle]');
+    if (!btn) return;
+    e.preventDefault();
+    var wrap = btn.closest('.login-input, .register-input, .reset-input-wrap, .nav-auth-input-wrap, div, label');
+    var input = wrap ? wrap.querySelector('input') : null;
+    if (!input) return;
+    var isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+    btn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+    btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+    btn.classList.toggle('is-visible', isPassword);
+});
+</script>
 </body>
 </html>

@@ -11,9 +11,10 @@
         @auth
             @include('components.navbar.account-menu')
         @else
-            <a class="login-link" href="{{ route('login') }}">{{ __('ui.log_in') }}</a>
-            <a class="button button-small" href="{{ route('register') }}">{{ __('ui.create_account') }}</a>
+            <a class="login-link" href="{{ route('login') }}" data-open-auth="login">{{ __('ui.log_in') }}</a>
+            <a class="button button-small" href="{{ route('register') }}" data-open-auth="register">{{ __('ui.create_account') }}</a>
         @endauth
     </div>
 </header>
 @include('components.breadcrumbs.breadcrumbs')
+@include('components.auth-modals.auth-modals')

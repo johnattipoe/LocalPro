@@ -1,4 +1,4 @@
-FROM php:8.2.35-apache-bookworm AS php-base
+FROM php:8.3.36-apache-bookworm AS php-base
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 ENV PORT=10000

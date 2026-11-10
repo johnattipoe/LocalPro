@@ -1,39 +1,47 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController\HomeController;
-use App\Http\Controllers\Auth\LoginController\LoginController;
-use App\Http\Controllers\Auth\RegisterController\RegisterController;
-use App\Http\Controllers\Customer\ServiceRequestController\ServiceRequestController;
-use App\Http\Controllers\Provider\ProviderBookingController\ProviderBookingController;
-use App\Http\Controllers\Provider\ProviderDashboardController\ProviderDashboardController;
 use App\Http\Controllers\Admin\AdminDashboardController\AdminDashboardController;
-use App\Http\Controllers\Admin\ProviderApprovalController\ProviderApprovalController;
-use App\Http\Controllers\MessageController\MessageController;
-use App\Http\Controllers\Provider\ProviderProfileController\ProviderProfileController;
-use App\Http\Controllers\Provider\ProviderServiceController\ProviderServiceController;
-use App\Http\Controllers\Customer\ReviewController\ReviewController;
-use App\Http\Controllers\Admin\CategoryController\CategoryController;
-use App\Http\Controllers\Admin\UserManagementController\UserManagementController;
+use App\Http\Controllers\Admin\AdminSettingsController\AdminSettingsController;
 use App\Http\Controllers\Admin\BookingManagementController\BookingManagementController;
+use App\Http\Controllers\Admin\CategoryController\CategoryController;
+use App\Http\Controllers\Admin\PaymentManagementController\PaymentManagementController;
+use App\Http\Controllers\Admin\PayoutManagementController\PayoutManagementController;
+use App\Http\Controllers\Admin\ProviderApprovalController\ProviderApprovalController;
+use App\Http\Controllers\Admin\ReportController\ReportController;
+use App\Http\Controllers\Admin\SupportTicketController\SupportTicketController;
+use App\Http\Controllers\Admin\UserManagementController\UserManagementController;
+use App\Http\Controllers\Auth\FacebookAuthController\FacebookAuthController;
+use App\Http\Controllers\Auth\GoogleAuthController\GoogleAuthController;
+use App\Http\Controllers\Auth\LoginController\LoginController;
+use App\Http\Controllers\Auth\PasswordResetController\PasswordResetController;
+use App\Http\Controllers\Auth\RegisterController\RegisterController;
+use App\Http\Controllers\ChatController\ChatController;
+use App\Http\Controllers\Customer\BookingController\BookingController;
+use App\Http\Controllers\Customer\BookingController\CalendarController;
 use App\Http\Controllers\Customer\CustomerDashboardController\CustomerDashboardController;
 use App\Http\Controllers\Customer\CustomerProfileController\CustomerProfileController;
-use App\Http\Controllers\Customer\BookingController\BookingController;
-use App\Http\Controllers\Provider\ProviderVerificationController\ProviderVerificationController;
-use App\Http\Controllers\Provider\EarningsController\EarningsController;
+use App\Http\Controllers\Customer\ReviewController\ReviewController;
+use App\Http\Controllers\Customer\ServiceRequestController\ServiceRequestController;
+use App\Http\Controllers\HomeController\HomeController;
+use App\Http\Controllers\MessageController\MessageController;
+use App\Http\Controllers\MessageController\QuickReplyController;
 use App\Http\Controllers\NotificationController\NotificationController;
-use App\Http\Controllers\Admin\ReportController\ReportController;
-use App\Http\Controllers\ProviderSearchController\ProviderSearchController;
+use App\Http\Controllers\NotificationController\PushController;
 use App\Http\Controllers\PaymentController\PaymentController;
-use App\Http\Controllers\Auth\PasswordResetController\PasswordResetController;
-use App\Http\Controllers\Auth\GoogleAuthController\GoogleAuthController;
-use App\Http\Controllers\SupportController\SupportController;
-use App\Http\Controllers\Admin\SupportTicketController\SupportTicketController;
-use App\Http\Controllers\Provider\ProviderPayoutController\ProviderPayoutController;
-use App\Http\Controllers\Provider\ProviderSettingsController\ProviderSettingsController;
+use App\Http\Controllers\Provider\EarningsController\EarningsController;
 use App\Http\Controllers\Provider\ProviderAvailabilityController\ProviderAvailabilityController;
-use App\Http\Controllers\Admin\PayoutManagementController\PayoutManagementController;
-use App\Http\Controllers\Admin\AdminSettingsController\AdminSettingsController;
+use App\Http\Controllers\Provider\ProviderBookingController\ProviderBookingController;
+use App\Http\Controllers\Provider\ProviderDashboardController\ProviderDashboardController;
+use App\Http\Controllers\Provider\ProviderPayoutController\ProviderPayoutController;
+use App\Http\Controllers\Provider\ProviderProfileController\ProviderProfileController;
+use App\Http\Controllers\Provider\ProviderServiceController\ProviderServiceController;
+use App\Http\Controllers\Provider\ProviderSettingsController\ProviderSettingsController;
+use App\Http\Controllers\Provider\ProviderVerificationController\ProviderVerificationController;
+use App\Http\Controllers\ProviderSearchController\FavoriteController;
+use App\Http\Controllers\ProviderSearchController\ProviderSearchController;
+use App\Http\Controllers\SupportController\SupportController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +55,7 @@ use App\Http\Controllers\Admin\AdminSettingsController\AdminSettingsController;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::post('/language', function (\Illuminate\Http\Request $request) {
+Route::post('/language', function (Request $request) {
     $supported = array_keys(config('locales.locales', []));
     $locale = $request->validate(['locale' => ['required', 'string', 'in:'.implode(',', $supported)]])['locale'];
     $request->session()->put('locale', $locale);
@@ -57,7 +65,7 @@ Route::post('/language', function (\Illuminate\Http\Request $request) {
 Route::get('/professionals', [ProviderSearchController::class, 'index'])->name('professionals.index');
 Route::get('/services', [HomeController::class, 'services'])->name('services.index');
 Route::get('/services/search', [ProviderSearchController::class, 'index'])->name('services.search');
-Route::get('/providers/register', fn () => redirect()->route('register', ['role'=>'provider']))->name('providers.register');
+Route::get('/providers/register', fn () => redirect()->route('register', ['role' => 'provider']))->name('providers.register');
 Route::view('/about', 'pages.about.about')->name('about');
 Route::view('/contact', 'pages.contact.contact')->name('contact');
 Route::view('/privacy', 'pages.privacy.privacy')->name('privacy');
@@ -66,6 +74,7 @@ Route::post('/contact', [SupportController::class, 'store'])->middleware('thrott
 Route::view('/how-it-works', 'pages.how-it-works.how-it-works')->name('how-it-works');
 Route::get('/services/{category:slug}', [HomeController::class, 'category'])->name('services.show');
 Route::get('/providers/{provider}', [HomeController::class, 'provider'])->name('providers.show');
+Route::post('/assistant/chat', [ChatController::class, 'reply'])->middleware('throttle:12,1')->name('assistant.chat');
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
@@ -73,18 +82,26 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('throttle:10,1')->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1')->name('google.callback');
-    Route::get('/forgot-password', [PasswordResetController::class,'requestForm'])->name('password.request');
+    Route::get('/auth/facebook/redirect', [FacebookAuthController::class, 'redirect'])->middleware('throttle:10,1')->name('facebook.redirect');
+    Route::get('/auth/facebook/callback', [FacebookAuthController::class, 'callback'])->middleware('throttle:10,1')->name('facebook.callback');
+    Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->middleware('throttle:5,1')->name('password.email');
-    Route::get('/reset-password/{token}', [PasswordResetController::class,'resetForm'])->name('password.reset');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:10,1')->name('password.update');
 });
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/push/subscribe', [PushController::class, 'subscribe'])->name('notifications.push.subscribe');
+    Route::post('/notifications/push/unsubscribe', [PushController::class, 'unsubscribe'])->name('notifications.push.unsubscribe');
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/requests/{serviceRequest}/messages', [MessageController::class, 'show'])->name('messages.show');
     Route::get('/requests/{serviceRequest}/messages/updates', [MessageController::class, 'updates'])->name('messages.updates');
     Route::post('/requests/{serviceRequest}/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::get('/quick-replies', [QuickReplyController::class, 'index'])->name('quick-replies.index');
+    Route::post('/quick-replies', [QuickReplyController::class, 'store'])->name('quick-replies.store');
+    Route::post('/providers/{provider}/favorite', [FavoriteController::class, 'toggle'])->name('providers.favorite.toggle');
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
 });
 
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
@@ -92,14 +109,18 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('/profile', [CustomerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [CustomerProfileController::class, 'update'])->name('profile.update');
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
-    Route::post('/requests/{serviceRequest}/pay', [PaymentController::class,'checkout'])->name('payments.initialize');
-    Route::get('/payments/paystack/return', [PaymentController::class,'callback'])->name('payments.callback');
+    Route::post('/requests/{serviceRequest}/pay', [PaymentController::class, 'checkout'])->name('payments.initialize');
+    Route::get('/payments/paystack/return', [PaymentController::class, 'callback'])->name('payments.callback');
     Route::get('/history', [ServiceRequestController::class, 'history'])->name('history');
     Route::get('/settings', [CustomerProfileController::class, 'settings'])->name('settings');
+    Route::patch('/settings/sms', [CustomerProfileController::class, 'toggleSms'])->name('settings.sms');
     Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
     Route::get('/requests', [ServiceRequestController::class, 'index'])->name('requests.index');
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/recurrence', [BookingController::class, 'setRecurrence'])->name('bookings.recurrence');
+    Route::post('/bookings/{booking}/calendar/sync', [CalendarController::class, 'sync'])->name('bookings.calendar.sync');
+    Route::post('/bookings/{booking}/calendar/unsync', [CalendarController::class, 'unsync'])->name('bookings.calendar.unsync');
     Route::get('/requests/{serviceRequest}', [ServiceRequestController::class, 'show'])->name('requests.show');
     Route::patch('/requests/{serviceRequest}/cancel', [ServiceRequestController::class, 'cancel'])->name('requests.cancel');
     Route::get('/request-to/{provider}', [ServiceRequestController::class, 'create'])->name('requests.create');
@@ -141,7 +162,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/analytics', [ReportController::class, 'analytics'])->name('analytics.index');
     Route::patch('/reviews/{review}', [ReportController::class, 'toggleReview'])->name('reviews.toggle');
-    Route::get('/payments', [\App\Http\Controllers\Admin\PaymentManagementController\PaymentManagementController::class, 'index'])->name('payments.index');
+    Route::get('/payments', [PaymentManagementController::class, 'index'])->name('payments.index');
     Route::get('/payouts', [PayoutManagementController::class, 'index'])->name('payouts.index');
     Route::patch('/payouts/{payout}', [PayoutManagementController::class, 'update'])->name('payouts.update');
     Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');

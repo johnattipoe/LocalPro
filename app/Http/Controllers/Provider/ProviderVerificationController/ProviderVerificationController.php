@@ -25,7 +25,10 @@ class ProviderVerificationController extends Controller
         $profile = $request->user()->providerProfile;
         abort_unless($profile, 404);
         $data = $request->validate([
-            'document_type'=>['required','in:ghana_card,passport,drivers_license,business_document'],
+            'document_type'=>[
+                'required',
+                'in:ghana_card,passport,drivers_license,business_document,professional_certificate,business_registration,tax_document,proof_of_address,insurance,work_sample,reference,experience_history',
+            ],
             'document'=>['required','file','mimes:jpg,jpeg,png,pdf','max:5120'],
         ]);
         $this->verification->submit($profile, $data['document_type'], $request->file('document'));

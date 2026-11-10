@@ -19,6 +19,8 @@ LocalPro is a Laravel marketplace MVP for finding trusted local service professi
 
 ## Run locally
 
+LocalPro now requires PHP 8.3 or newer (the bundled Docker runtime uses PHP 8.3.36). Ensure the PHP executable used by Composer and Artisan is also 8.3; older XAMPP installations will not run this version.
+
 1. Install PHP dependencies with `composer install` and frontend dependencies with `npm install`.
 2. Copy `.env.example` to `.env` if needed and generate an application key: `php artisan key:generate`.
 3. Create an empty `database/database.sqlite` file if it does not exist.
@@ -26,6 +28,12 @@ LocalPro is a Laravel marketplace MVP for finding trusted local service professi
 5. Compile assets with `npm run build` (or use `npm run dev` while developing).
 6. Create the initial admin interactively with `php artisan localpro:make-admin`.
 7. Start Laravel with `php artisan serve` and open the address it prints.
+
+For optional local Redis, start Docker Desktop and run `docker run --name localpro-redis --restart unless-stopped --publish 127.0.0.1:6379:6379 --detach redis:7-alpine`. Set `REDIS_CLIENT=predis`, `REDIS_URL=redis://127.0.0.1:6379`, `CACHE_DRIVER=redis`, and `SESSION_DRIVER=redis` in `.env`, then run `php artisan config:clear`. The queue remains synchronous by default; only set `QUEUE_CONNECTION=redis` if a `php artisan queue:work` process will be kept running.
+
+Memcached is an optional cache alternative, not required alongside Redis. For local development, start it with `docker run --name localpro-memcached --restart unless-stopped --publish 127.0.0.1:11211:11211 --detach memcached:1.6-alpine`. The PHP `memcached` extension must also be installed and enabled for the PHP runtime running Laravel. After verifying it appears in `php -m`, set `MEMCACHED_HOST=127.0.0.1`, `MEMCACHED_PORT=11211`, and `CACHE_DRIVER=memcached` in `.env`, then run `php artisan config:clear`. This changes only cache storage; Redis can remain enabled for sessions. Do not select the Memcached cache driver until the PHP extension is loaded.
+
+For browser push notifications, set `VAPID_SUBJECT` to a public contact URI such as `mailto:you@example.com`, then run `php artisan webpush:generate-vapid` to generate and store a VAPID keypair in the private `.env` file. Keep `VAPID_PRIVATE_KEY` secret and do not replace keys after users subscribe unless you intend to require them to subscribe again. Push subscriptions require HTTPS in production (localhost is allowed for local development); the app uses the Web Push protocol with encrypted payloads.
 
 ## Deploy on Render with Docker
 
@@ -74,7 +82,7 @@ Paystack checkout is available after configuration. For local development, put a
 ## Current service boundaries
 
 - Search uses the towns and service areas entered in provider profiles; map pins and geocoding are not configured.
-- Messages and notifications are stored in the application and shown in the signed-in experience. Real-time delivery and SMS are not configured.
+- Messages and notifications are stored in the application and shown in the signed-in experience. SMS notifications use the BMS Africa API when `BMS_API_KEY` and `BMS_SENDER` are configured.
 - Provider identity files use Laravel's private local disk. For a public deployment, configure private object storage, access controls, retention rules, and backups before accepting documents.
 - Support cases are saved for admins. Admin replies are emailed only when the configured mail transport can send them; the case is still saved if delivery fails.
 - Payout requests reserve eligible paid customer collections and are tracked for provider/admin review. The record does not itself move funds; only record a payout as paid after verifying an external transfer.
@@ -86,3 +94,8 @@ Create one customer, one provider, and one administrator account in a private st
 ## Google sign-in setup
 
 Google sign-in uses Laravel Socialite. Add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to the deployment environment, and set `GOOGLE_REDIRECT_URI` to the exact URL registered in Google Cloud Console (for example, `http://localhost:8000/auth/google/callback` during local development). Run `php artisan migrate` to add the Google account ID column. Google sign-in will create customer accounts by default; choosing provider registration starts a pending provider profile that still needs completion and identity verification. Without Google credentials, the email and password forms remain available and the Google button displays a setup message.
+
+
+# admin email and password
+Email: admin@localpro.com
+Temporary password: 15361E8EC5247BA391FECF1988487D2EE62FD089D06B0A75

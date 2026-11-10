@@ -17,7 +17,7 @@
                 <p>Explore approved local profiles, compare services and starting prices, and contact a professional to talk through the details.</p>
                 <div class="professionals-directory-actions">
                     <a class="button" href="#professional-filters">Browse professionals <i data-lucide="arrow-right" aria-hidden="true"></i></a>
-                    <a href="{{ route('services.index') }}">Explore services <i data-lucide="arrow-right" aria-hidden="true"></i></a>
+                    <a class="button button-outline" href="{{ route('professionals.index') . '?view=map' . (count($filters) ? '&' . http_build_query($filters) : '') }}">View on map <i data-lucide="map-pin" aria-hidden="true"></i></a>
                 </div>
                 <div class="professionals-directory-points">
                     <span><i data-lucide="shield-check" aria-hidden="true"></i> Approved profiles</span>
@@ -72,19 +72,57 @@
                 </label>
                 <label><span><i data-lucide="credit-card" aria-hidden="true"></i> Maximum starting price</span>
                     <input type="number" name="max_price" min="0" step="1" value="{{ $filters['max_price'] ?? '' }}" placeholder="GH&#8373;"></label>
+                <label><span><i data-lucide="credit-card" aria-hidden="true"></i> Minimum starting price</span>
+                    <input type="number" name="min_price" min="0" step="1" value="{{ $filters['min_price'] ?? '' }}" placeholder="GH&#8373;"></label>
+                <label><span><i data-lucide="clock" aria-hidden="true"></i> Availability</span>
+                    <select name="availability">
+                        <option value="">Any</option>
+                        <option value="accepting" @selected(($filters['availability'] ?? '')==='accepting')>Accepting requests</option>
+                        <option value="not_accepting" @selected(($filters['availability'] ?? '')==='not_accepting')>Not accepting requests</option>
+                    </select>
+                </label>
+                <label><span><i data-lucide="clock" aria-hidden="true"></i> Response time</span>
+                    <select name="response_time">
+                        <option value="">Any response time</option>
+                        <option value="1-24" @selected(($filters['response_time'] ?? '')==='1-24')>Within 24 hours</option>
+                        <option value="24-48" @selected(($filters['response_time'] ?? '')==='24-48')>24–48 hours</option>
+                        <option value="48-72" @selected(($filters['response_time'] ?? '')==='48-72')>48–72 hours</option>
+                        <option value="72+" @selected(($filters['response_time'] ?? '')==='72+')>72+ hours</option>
+                    </select>
+                </label>
+                <label><span><i data-lucide="calendar-days" aria-hidden="true"></i> Years in business</span>
+                    <select name="years_in_business">
+                        <option value="">Any experience</option>
+                        <option value="1-2" @selected(($filters['years_in_business'] ?? '')==='1-2')>1–2 years</option>
+                        <option value="3-5" @selected(($filters['years_in_business'] ?? '')==='3-5')>3–5 years</option>
+                        <option value="6-10" @selected(($filters['years_in_business'] ?? '')==='6-10')>6–10 years</option>
+                        <option value="10+" @selected(($filters['years_in_business'] ?? '')==='10+')>10+ years</option>
+                    </select>
+                </label>
+                <label><span><i data-lucide="circle-alert" aria-hidden="true"></i> Radius (km)</span>
+                    <input type="number" name="radius" min="1" max="100" step="5" value="{{ $filters['radius'] ?? '20' }}" placeholder="20 km"></label>
+                <button type="button" class="button use-my-location" data-use-my-location><i data-lucide="crosshair" aria-hidden="true"></i> Use my location</button>
+                <input type="hidden" name="lat" value="{{ $filters['lat'] ?? '' }}">
+                <input type="hidden" name="lng" value="{{ $filters['lng'] ?? '' }}">
                 <button class="button" type="submit"><i data-lucide="search" aria-hidden="true"></i> Search professionals</button>
             </form>
-            @if(!empty($filters['q']) || !empty($filters['category']) || !empty($filters['city']) || !empty($filters['min_rating']) || isset($filters['max_price']))
-                <div class="directory-active-filters" aria-label="Active filters">
-                    <strong><i data-lucide="search" aria-hidden="true"></i> Filters applied</strong>
-                    @if(!empty($filters['q']))<span>Service: {{ $filters['q'] }}</span>@endif
-                    @if(!empty($filters['category']))<span>{{ $filters['category'] }}</span>@endif
-                    @if(!empty($filters['city']))<span><i data-lucide="map-pin" aria-hidden="true"></i>{{ $filters['city'] }}</span>@endif
-                    @if(!empty($filters['min_rating']))<span><i data-lucide="star" aria-hidden="true"></i>{{ $filters['min_rating'] }}+ stars</span>@endif
-                    @if(isset($filters['max_price']))<span>Up to GH₵ {{ number_format((float) $filters['max_price'], 2) }}</span>@endif
-                    <a href="{{ route('professionals.index') }}">Clear all</a>
-                </div>
-            @endif
+@if(!empty($filters['q']) || !empty($filters['category']) || !empty($filters['city']) || !empty($filters['min_rating']) || isset($filters['max_price']) || !empty($filters['radius']) || !empty($filters['lat']) || !empty($filters['min_price']) || !empty($filters['availability']) || !empty($filters['response_time']) || !empty($filters['years_in_business']))
+    <div class="directory-active-filters" aria-label="Active filters">
+        <strong><i data-lucide="search" aria-hidden="true"></i> Filters applied</strong>
+        @if(!empty($filters['q']))<span>Service: {{ $filters['q'] }}</span>@endif
+        @if(!empty($filters['category']))<span>{{ $filters['category'] }}</span>@endif
+        @if(!empty($filters['city']))<span><i data-lucide="map-pin" aria-hidden="true"></i>{{ $filters['city'] }}</span>@endif
+        @if(!empty($filters['min_rating']))<span><i data-lucide="star" aria-hidden="true"></i>{{ $filters['min_rating'] }}+ stars</span>@endif
+        @if(isset($filters['min_price']))<span>From GH₵ {{ number_format((float) $filters['min_price'], 2) }}</span>@endif
+        @if(isset($filters['max_price']))<span>Up to GH₵ {{ number_format((float) $filters['max_price'], 2) }}</span>@endif
+        @if(!empty($filters['availability']))<span><i data-lucide="clock" aria-hidden="true"></i>{{ ucfirst(str_replace('_',' ',$filters['availability'])) }}</span>@endif
+        @if(!empty($filters['response_time']))<span><i data-lucide="clock" aria-hidden="true"></i>Responds {{ $filters['response_time'] }}</span>@endif
+        @if(!empty($filters['years_in_business']))<span><i data-lucide="calendar-days" aria-hidden="true"></i>{{ str_replace(['1-2','3-5','6-10','10+'], ['1–2 years','3–5 years','6–10 years','10+ years'], $filters['years_in_business']) }}</span>@endif
+        @if(!empty($filters['radius']))<span><i data-lucide="circle-alert" aria-hidden="true"></i>{{ $filters['radius'] }} km radius</span>@endif
+        @if(!empty($filters['lat']))<span><i data-lucide="crosshair" aria-hidden="true"></i>Near your location</span>@endif
+        <a href="{{ route('professionals.index') }}">Clear all</a>
+    </div>
+@endif
         </section>
 
         <section class="directory-provider-results" aria-labelledby="directory-results-title">
@@ -92,7 +130,7 @@
                 <div><span class="directory-section-kicker">YOUR LOCAL OPTIONS</span><h2 id="directory-results-title">{{ !empty($filters['q']) || !empty($filters['category']) ? 'Matching professionals' : 'Professionals you can contact' }}</h2><p>Review each profile, compare what they offer, and contact someone who fits your needs.</p></div>
                 <span class="directory-results-total"><strong>{{ number_format($providers->total()) }}</strong>{{ \Illuminate\Support\Str::plural('professional', $providers->total()) }} found</span>
             </div>
-            <div class="provider-grid directory-provider-grid">
+            <div class="provider-grid directory-provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,25rem),25rem));gap:18px">
                 @forelse($providers as $provider)
                     <x-provider-card.provider-card :provider="$provider" />
                 @empty

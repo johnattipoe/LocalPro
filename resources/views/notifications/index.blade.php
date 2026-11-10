@@ -14,4 +14,16 @@
     @endforelse
 </section>
 <div class="cp-pagination">{{ $notifications->links() }}</div>
+
+@php
+    $pushSubscribed = \App\Models\PushSubscription::where('user_id', auth()->id())->exists();
+@endphp
+<section class="cp-panel cp-setting-card"><span class="cp-setting-icon">📱</span><div><h2>Push notifications</h2><p>Receive browser notifications for new messages and booking updates.</p>
+    @if($pushSubscribed)
+        <button class="cp-button cp-button-small cp-button-outline" id="push-unsubscribe">Unsubscribe</button>
+    @else
+        <button class="cp-button cp-button-small" id="push-subscribe">Subscribe</button>
+    @endif
+</div></section>
+<script src="{{ asset('js/push-subscribe.js') }}"></script>
 @endsection

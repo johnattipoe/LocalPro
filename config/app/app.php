@@ -191,7 +191,7 @@ return [
          */
         App\Providers\AppServiceProvider\AppServiceProvider::class,
         App\Providers\AuthServiceProvider\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider\EventServiceProvider::class,
         App\Providers\RouteServiceProvider\RouteServiceProvider::class,
 

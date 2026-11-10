@@ -27,7 +27,7 @@
                 </p>
             </div>
         </div>
-        <div class="provider-profile-hero-action">
+        <div class="provider-profile-hero-action" id="contact">
             <span class="provider-profile-action-label">LOOKING FOR HELP?</span>
             @auth
                 @if(auth()->user()->role === 'customer')

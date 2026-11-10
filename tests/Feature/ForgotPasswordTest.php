@@ -8,6 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Password;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 class ForgotPasswordTest extends TestCase
@@ -37,7 +39,7 @@ class ForgotPasswordTest extends TestCase
 
         $this->get(route('password.reset', ['token' => $resetToken, 'email' => $user->email]))
             ->assertSuccessful()
-            ->assertSee('Choose a new password');
+            ->assertSee('Set a New Password');
 
         $this->post('/reset-password', [
             'token' => $resetToken,
@@ -74,6 +76,18 @@ class ForgotPasswordTest extends TestCase
         $this->get('/forgot-password')->assertSee('Reset link saved locally');
 
         Notification::assertNothingSent();
+    }
+
+    public function test_mail_transport_failure_does_not_expose_account_existence_or_return_server_error(): void
+    {
+        Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andThrow(new TransportException('Mail server unavailable.'));
+
+        $this->post('/forgot-password', ['email' => 'customer@example.test'])
+            ->assertRedirect()
+            ->assertSessionHas('status', 'If an account exists for that email, a reset link will be sent shortly.')
+            ->assertSessionMissing('errors');
     }
 
     public function test_reset_rejects_a_password_that_does_not_match_confirmation(): void

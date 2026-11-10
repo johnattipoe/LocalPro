@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\PaymentController;
 
 use App\Http\Controllers\Controller\Controller;
+use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\ServiceRequest;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -30,23 +32,40 @@ class PaymentController extends Controller
         abort_unless((int) $serviceRequest->customer_id === (int) $request->user()->id, 404);
         abort_unless($serviceRequest->status === 'completed' && $serviceRequest->booking, 422);
 
-        $booking = $serviceRequest->booking;
-        $amount = (int) round(((float) $booking->final_price) * 100);
-        abort_unless($amount > 0, 422, 'The provider has not added a final price for this job.');
-        abort_if($booking->payments()->where('status', 'paid')->exists(), 409, 'This job has already been paid.');
-
         if (! config('services.paystack.secret_key')) {
             return back()->withErrors(['payment' => 'Online payments are not available right now. Please contact LocalPro support for help.']);
         }
 
-        $payment = Payment::create([
-            'booking_id' => $booking->id,
-            'customer_id' => $request->user()->id,
-            'amount' => number_format($amount / 100, 2, '.', ''),
-            'currency' => 'GHS',
-            'provider_reference' => 'LP-' . strtoupper(Str::random(24)),
-            'status' => 'pending',
-        ]);
+        $payment = DB::transaction(function () use ($request, $serviceRequest) {
+            $booking = Booking::whereKey($serviceRequest->booking->id)->lockForUpdate()->firstOrFail();
+            abort_unless((int) $booking->customer_id === (int) $request->user()->id, 404);
+
+            $amount = (int) round(((float) $booking->final_price) * 100);
+            abort_unless($amount > 0, 422, 'The provider has not added a final price for this job.');
+            abort_if($booking->payments()->where('status', 'paid')->exists(), 409, 'This job has already been paid.');
+
+            $payment = $booking->payments()->where('status', 'pending')->latest('id')->lockForUpdate()->first();
+            if ($payment) {
+                abort_if(
+                    (int) $payment->customer_id !== (int) $request->user()->id
+                    || (int) round(((float) $payment->amount) * 100) !== $amount
+                    || $payment->currency !== 'GHS',
+                    409,
+                    'A payment for a different amount is already awaiting confirmation.'
+                );
+
+                return $payment;
+            }
+
+            return Payment::create([
+                'booking_id' => $booking->id,
+                'customer_id' => $request->user()->id,
+                'amount' => number_format($amount / 100, 2, '.', ''),
+                'currency' => 'GHS',
+                'provider_reference' => 'LP-' . strtoupper(Str::random(24)),
+                'status' => 'pending',
+            ]);
+        });
 
         $checkoutUrl = $this->payments->startCheckout(
             $payment,
@@ -54,7 +73,7 @@ class PaymentController extends Controller
             route('customer.payments.callback'),
             [
                 'payment_id' => $payment->id,
-                'booking_id' => $booking->id,
+                'booking_id' => $payment->booking_id,
                 'service_request_id' => $serviceRequest->id,
                 'customer_id' => $request->user()->id,
             ]

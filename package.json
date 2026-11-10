@@ -18,6 +18,8 @@
     },
     "dependencies": {
         "aos": "^2.3.4",
-        "lucide": "^1.59.0"
+        "laravel-echo": "^2.6.1",
+        "lucide": "^1.59.0",
+        "pusher-js": "^8.6.0"
     }
 }

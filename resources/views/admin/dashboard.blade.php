@@ -41,7 +41,7 @@
                 <section class="admin-panel category-chart-panel">
                     <div class="admin-panel-heading"><div><h2>{{ __('ui.service_categories') }}</h2><p>Distribution of customer requests</p></div><a href="{{ route('admin.categories.index') }}">Manage <span>→</span></a></div>
                     @if($categories->isNotEmpty())
-                        <div class="category-chart-body"><div class="category-donut" style="background:{{ $donutBackground }}"><div><strong>{{ number_format($categoryTotal) }}</strong><span>Requests</span></div></div><ul class="category-legend">@foreach($categories as $category)<li><i style="--category-color:{{ $category['color'] }}"></i><span>{{ $category['name'] }}</span><b>{{ $category['percent'] }}%</b></li>@endforeach</ul></div>
+                        <div class="category-chart-body"><div class="category-donut" @style(['background' => $donutBackground])><div><strong>{{ number_format($categoryTotal) }}</strong><span>Requests</span></div></div><ul class="category-legend">@foreach($categories as $category)<li><i @style(['--category-color' => $category['color']])></i><span>{{ $category['name'] }}</span><b>{{ $category['percent'] }}%</b></li>@endforeach</ul></div>
                     @else
                         <div class="admin-chart-empty"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i><strong>No service requests yet</strong><p>Category activity appears as customers make requests.</p></div>
                     @endif

@@ -1,0 +1,154 @@
+.admin-provider-review-card {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto auto;
+    align-items: start;
+}
+
+.admin-provider-review-info {
+    display: grid;
+    gap: 18px;
+}
+
+.admin-provider-review-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.admin-provider-review-heading > div {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-provider-review-heading .status-pill {
+    margin: 0;
+}
+
+.admin-provider-review-section {
+    display: grid;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.admin-provider-review-section h2,
+.admin-provider-review-description h3 {
+    margin: 0;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-provider-review-section h2 span {
+    display: inline-grid;
+    min-width: 20px;
+    height: 20px;
+    margin-left: 4px;
+    place-items: center;
+    border-radius: 999px;
+    background: #edf4ef;
+    color: var(--green);
+    font-size: 11px;
+}
+
+.admin-provider-review-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+}
+
+.admin-provider-review-facts p,
+.admin-provider-review-description p {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    color: #64736e;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.admin-provider-review-facts strong {
+    color: #35433e;
+}
+
+.admin-provider-review-description {
+    display: grid;
+    gap: 4px;
+}
+
+.admin-provider-document-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-provider-document-list li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fbfcfa;
+}
+
+.admin-provider-document-list li > div {
+    display: grid;
+    gap: 3px;
+}
+
+.admin-provider-document-list li strong {
+    color: #35433e;
+    font-size: 12px;
+}
+
+.admin-provider-document-list li small,
+.admin-provider-no-documents {
+    margin: 0;
+    color: #78857e;
+    font-size: 12px;
+}
+
+.admin-provider-document-list .status-pill {
+    margin: 0;
+}
+
+.admin-provider-document-download {
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+    .admin-provider-review-card {
+        grid-template-columns: 42px minmax(0, 1fr);
+    }
+
+    .admin-provider-review-info {
+        grid-column: 2;
+        width: 100%;
+    }
+
+    .admin-provider-review-card > form {
+        grid-column: 2;
+    }
+
+    .admin-provider-review-facts {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-provider-document-list li {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .admin-provider-document-list .status-pill {
+        justify-self: start;
+    }
+}

@@ -39,15 +39,6 @@
         </nav>
     </div>
 
-    <div class="site-footer-promise">
-        <span class="site-footer-promise-icon"><i data-lucide="shield-check" aria-hidden="true"></i></span>
-        <div>
-            <strong>Good work starts with clear expectations.</strong>
-            <p>Review profiles, discuss the job, and agree on the price and schedule directly before work begins.</p>
-        </div>
-        <a href="{{ route('how-it-works') }}">See how it works <i data-lucide="arrow-right" aria-hidden="true"></i></a>
-    </div>
-
     <div class="site-footer-bottom">
         <small><i data-lucide="map-pin" aria-hidden="true"></i> &#169; {{ date('Y') }} LocalPro. Connecting Ho and the Volta Region.</small>
         <span class="site-footer-bottom-links">
@@ -55,9 +46,8 @@
             <a href="{{ route('terms') }}">Terms</a>
             <a href="{{ route('contact') }}">Support</a>
             @unless(request()->routeIs('customer.*', 'provider.*', 'admin.*'))
-            <button class="cookie-footer-button" type="button" data-open-cookie-settings>{{ __('ui.cookie_settings') }}</button>
+            <button class="cookie-footer-button" type="button" data-open-cookie-settings><i data-lucide="cookie" aria-hidden="true"></i><span>{{ __('ui.cookie_settings') }}</span></button>
             @endunless
-            <a href="{{ route('home') }}#top">Back to top <i data-lucide="arrow-up" aria-hidden="true"></i></a>
         </span>
     </div>
 </footer>

@@ -15,19 +15,31 @@ class CustomerProfileController extends Controller
 
     public function edit(Request $request)
     {
-        return view('customer.profile.edit', ['user'=>$request->user()]);
+        return view('customer.profile.edit', ['user' => $request->user()]);
     }
 
     public function update(Request $request)
     {
         $user = $request->user();
         $data = $request->validate([
-            'name'=>['required','string','max:120'],
-            'email'=>['required','email','max:180',Rule::unique('users','email')->ignore($user->id)],
-            'phone'=>['nullable','string','max:32'],
-            'city'=>['required','in:Ho,Hohoe,Keta,Aflao'],
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:180', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:32'],
+            'city' => ['required', 'in:Ho,Hohoe,Keta,Aflao'],
         ]);
         $user->update($data);
-        return back()->with('status','Your profile has been updated.');
+
+        return back()->with('status', 'Your profile has been updated.');
+    }
+
+    public function toggleSms(Request $request)
+    {
+        $user = $request->user();
+        $data = $request->validate([
+            'sms_notifications_enabled' => ['sometimes', 'boolean'],
+        ]);
+        $user->update(['sms_notifications_enabled' => $data['sms_notifications_enabled'] ?? false]);
+
+        return back()->with('status', $user->sms_notifications_enabled ? 'SMS notifications enabled.' : 'SMS notifications disabled.');
     }
 }

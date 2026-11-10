@@ -29,7 +29,7 @@ class LoginController extends Controller
         $destination = match ($request->user()->role) {
             'admin' => route('admin.dashboard'),
             'provider' => route('provider.dashboard'),
-            'customer' => route('services.index'),
+            'customer' => route('customer.dashboard'),
             default => route('home'),
         };
 
@@ -38,9 +38,9 @@ class LoginController extends Controller
 
     public function destroy(Request $request)
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('home');
+        return redirect('/')->with('status', 'You have been logged out.');
     }
 }

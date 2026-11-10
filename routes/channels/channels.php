@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use App\Models\ServiceRequest;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +16,15 @@ use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
+});
+
+Broadcast::channel('service-request.{serviceRequestId}', function ($user, $serviceRequestId) {
+    $serviceRequest = ServiceRequest::query()->with('provider')->find($serviceRequestId);
+
+    if (! $serviceRequest || ! $user->is_active) {
+        return false;
+    }
+
+    return (int) $serviceRequest->customer_id === (int) $user->id
+        || (int) $serviceRequest->provider?->user_id === (int) $user->id;
 });

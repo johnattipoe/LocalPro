@@ -38,4 +38,3 @@ class ServiceRequest extends Model
 
     public function booking() { return $this->hasOne(Booking::class); }
 }
-

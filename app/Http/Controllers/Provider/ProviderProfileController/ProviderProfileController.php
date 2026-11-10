@@ -23,6 +23,8 @@ class ProviderProfileController extends Controller
         $data = $request->validate([
             'profession' => ['required', 'string', 'max:120'],
             'bio' => ['nullable', 'string', 'max:2000'],
+            'years_experience' => ['nullable', 'integer', 'min:0', 'max:80'],
+            'experience_summary' => ['nullable', 'string', 'max:2000'],
             'city' => ['required', 'in:Ho,Hohoe,Keta,Aflao'],
             'service_area' => ['nullable', 'string', 'max:255'],
             'location_address' => ['nullable', 'string', 'max:255'],

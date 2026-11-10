@@ -22,6 +22,7 @@
             <a href="{{ route('admin.settings.index') }}">{{ __('ui.settings') }}</a>
             <a href="{{ route('admin.support.index') }}">Support inbox</a>
         @endif
+        <a href="{{ route('favorites.index') }}">{{ __('ui.favorites') }}</a>
         <a href="{{ route('messages.index') }}">{{ __('ui.messages') }}</a>
         <a href="{{ route('notifications.index') }}">{{ __('ui.notifications') }}</a>
         <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">{{ __('ui.log_out') }}</button></form>

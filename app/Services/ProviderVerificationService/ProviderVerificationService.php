@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 class ProviderVerificationService
 {
@@ -21,6 +22,10 @@ class ProviderVerificationService
     {
         $disk = config('filesystems.default');
         $path = $document->store('provider-verifications/' . $profile->id, $disk);
+        if (! is_string($path) || $path === '') {
+            throw new RuntimeException('The provider verification document could not be stored.');
+        }
+
         try {
             $verification = ProviderVerification::create([
                 'provider_profile_id' => $profile->id,

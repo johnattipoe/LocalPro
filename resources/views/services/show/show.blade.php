@@ -28,7 +28,7 @@
         </div>
 
         @if($providers->isNotEmpty())
-            <div class="provider-grid directory-provider-grid">@foreach($providers as $provider)<x-provider-card.provider-card :provider="$provider" />@endforeach</div>
+            <div class="provider-grid directory-provider-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,25rem),25rem));gap:18px">@foreach($providers as $provider)<x-provider-card.provider-card :provider="$provider" />@endforeach</div>
             <div class="category-results-pagination">{{ $providers->links() }}</div>
         @else
             <div class="provider-empty directory-empty category-results-empty"><div class="empty-icon"><i data-lucide="search" aria-hidden="true"></i></div><div><strong>No verified {{ strtolower($category->name) }} professionals are listed yet.</strong><p>We’re growing the local network. Browse other services or invite a professional to join LocalPro.</p></div><div class="category-empty-actions"><a href="{{ route('services.index') }}">Explore other categories <i data-lucide="arrow-right" aria-hidden="true"></i></a><a href="{{ route('providers.register') }}">Register as a professional <i data-lucide="briefcase-business" aria-hidden="true"></i></a></div></div>

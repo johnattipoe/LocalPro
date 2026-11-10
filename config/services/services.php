@@ -1,5 +1,7 @@
 <?php
 
+$vapidEmail = trim((string) env('VAPID_EMAIL', ''));
+
 return [
 
     /*
@@ -43,4 +45,29 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost'), '/').'/auth/google/callback'),
     ],
 
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost'), '/').'/auth/facebook/callback'),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3-flash-preview'),
+        'ca_bundle' => env('GEMINI_CA_BUNDLE'),
+    ],
+
+    'sms' => [
+        'api_key' => env('BMS_API_KEY'),
+        'sender' => env('BMS_SENDER', 'LocalPro'),
+    ],
+
+    'push' => [
+        'vapid_public' => env('VAPID_PUBLIC_KEY'),
+        'vapid_private' => env('VAPID_PRIVATE_KEY'),
+        'vapid_subject' => env(
+            'VAPID_SUBJECT',
+            $vapidEmail === '' ? null : (str_starts_with($vapidEmail, 'mailto:') ? $vapidEmail : 'mailto:'.$vapidEmail),
+        ),
+    ],
 ];

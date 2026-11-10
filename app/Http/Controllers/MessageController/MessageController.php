@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MessageController;
 
 use App\Http\Controllers\Controller\Controller;
+use App\Events\MessageSent\MessageSent as MessageSentEvent;
 use App\Models\Message;
 use App\Models\ServiceRequest;
 use App\Services\NotificationService\NotificationService;
@@ -75,8 +76,8 @@ class MessageController extends Controller
             ? $serviceRequest->provider()->with('user')->firstOrFail()->user
             : $serviceRequest->customer;
 
-        DB::transaction(function () use ($serviceRequest, $user, $recipient, $data) {
-            Message::create([
+        $message = DB::transaction(function () use ($serviceRequest, $user, $recipient, $data) {
+            $message = Message::create([
                 'service_request_id' => $serviceRequest->id,
                 'sender_id' => $user->id,
                 'recipient_id' => $recipient->id,
@@ -88,7 +89,15 @@ class MessageController extends Controller
                 'New message from ' . $user->name,
                 'You have a new message about service request #' . $serviceRequest->id . '.'
             );
+
+            return $message;
         });
+
+        try {
+            event(new MessageSentEvent($message));
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         return redirect()->route('messages.show', $serviceRequest)->with('status', 'Message sent.');
     }
